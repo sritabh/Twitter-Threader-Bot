@@ -18,7 +18,8 @@ auth = tweepy.OAuthHandler(API_KEY,API_SKEY)
 auth.set_access_token(ACC_Token,ACC_Token_Secret)
 api = tweepy.API(auth, wait_on_rate_limit=True,
     wait_on_rate_limit_notify=True)
-cred = credentials.Certificate("twitter-threader-firebase-adminsdk-rh7d4-60df64a83c.json") #For Firebase
+#Credential for firebase
+cred = credentials.Certificate("twitter-threader-firebase-adminsdk-rh7d4-60df64a83c.json")
 
 class userThread:
     def __init__(self,id, name,username,profile_img,tweets):
@@ -83,7 +84,7 @@ class ThreadCompiler:
     def compileUser(self,tweets,user_id):
         print("ThreadCompiler: Compiling Tweets and User")
         tweets = tweets[::-1]
-        self.id = tweets[0] ##first id is used to save the thread
+        self.id = tweets[0].tweet_id ##first id is used to save the thread
         user = api.get_user(user_id)
         return userThread(user_id,user.name,user.screen_name,user.profile_image_url_https,tweets)
     def save(self,threaData=None):
@@ -125,6 +126,43 @@ class FirebaseUtility:
             print('FirebaseUtility:Thread {} Stored!'.format(str(thread_id)))
         else:
             pass
+
+class ThreaderBot:
+    def __init__(self,file_name="since_id.txt"):
+        fread = open(file_name, 'r')
+        self.since_id = int(fread.read().strip())
+        fread.close()
+    def retrieve_since_id(self,file_name="since_id.txt"):
+        fread = open(file_name, 'r')
+        since_id = int(fread.read().strip())
+        fread.close()
+        return since_id
+
+    def store_since_id(self,since_id=None, file_name="since_id.txt"):
+        if not since_id:
+            since_id = self.since_id
+        fwrite = open(file_name, 'w')
+        fwrite.write(str(since_id))
+        fwrite.close()
+        return
+    def fetchTweets(self):
+        ##Fetching only mentioned tweet
+        #Retweet will also trigger this
+        mentions = api.mentions_timeline(self.since_id)
+        mention = mentions[-1] if len(mentions) !=0 else None
+        if mention:
+            since_id = mention.id #Store the last id so that we can keep ourself updated
+            self.store_since_id(since_id)
+        return mention
+    def run(self):
+        print("ThreaderBot: Running...")
+        tweet = self.fetchTweets()
+        if not tweet:
+            print("ThreaderBot: Nothing New!")
+            return False
+        else:
+            print("ThreaderBot: Threading...")
+            return (tweet.in_reply_to_status_id,tweet.in_reply_to_user_id)
 def retrieve_since_id(file_name="since_id.txt"):
     fread = open(file_name, 'r')
     since_id = int(fread.read().strip())
@@ -146,4 +184,9 @@ def fetchTweets():
         since_id = mention.id #Store the last id so that we can keep ourself updated
         store_since_id(since_id)
     return mention
-        
+def fetchThreadChild():
+    tweet = fetchTweets()
+    if not tweet:
+        return False
+    else:
+        return (tweet.in_reply_to_status_id,tweet.in_reply_to_user_id)
