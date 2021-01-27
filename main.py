@@ -10,10 +10,10 @@ from os import environ
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 # Authenticating to to Twitter
-API_KEY = "aMkzebskwqn78mGSQtQaaRtiO"
-API_SKEY = "5qZBiiHSIlhFjb2yM1KmdNxdN2d5hUwMOaJofeAuQrmKvxwegb"
-ACC_Token = "722743883617214464-AAdKQp7tC1kAl94qxSM7xq5Rfzf2YX1"
-ACC_Token_Secret = "WBX90DB6UfTfYOhlRUjrk3iq7BTkKJ8esTWpPD9ixLk0B"
+API_KEY = "2RmSAmKyHHX2CBYSfCyjDvRHP"
+API_SKEY = "kXFwdrkPnhBpYFgopXq053CUfLJsw4lGWj5rj4W0cmlt7SfduQ"
+ACC_Token = "1353704693910921221-XmA1ZT6hcNlmyrlKFhqaQKvmQ4fd2T"
+ACC_Token_Secret = "wJ7cogcpyZtwlMN4qmpPe9wQzFKVZUeo4wudRzExqKuaz"
 auth = tweepy.OAuthHandler(API_KEY,API_SKEY)
 auth.set_access_token(ACC_Token,ACC_Token_Secret)
 api = tweepy.API(auth, wait_on_rate_limit=True,
@@ -62,6 +62,9 @@ class ThreadCompiler:
         self.id = tweet_id ##storing parent id
         self.user_id = user_id
     def compileTweets(self):
+        '''
+        Compiles tweet of thread and return list of object of class type Tweet
+        '''
         tweets = []
         parent_tweet_id = self.tweet_id
         print("ThreadCompiler: Fetching Tweets")
@@ -81,6 +84,9 @@ class ThreadCompiler:
             parent_tweet_id = tweet.in_reply_to_status_id
         return list(tweets)
     def compileThread(self,tweets:"list of object type Tweet" = None):
+        '''
+        Compiles Thread of tweets and user and return object of class type userThread
+        '''
         print("ThreadCompiler: Compiling Thread")
         if not tweets:
             tweets = self.compileTweets()
@@ -89,15 +95,22 @@ class ThreadCompiler:
         user = api.get_user(self.user_id)
         return userThread(self.user_id,user.name,user.screen_name,user.profile_image_url_https,tweets)
     def save(self,threaData:"Dictionar"=None):
+        '''
+        threaData: Takes dictionary
+        saves it to the firebase if not already exists and return True
+        '''
         ##
         if not threaData:
-            threaData = self.compile().to_dict()
+            threaData = self.compileThread().to_dict()
         print("ThreadCompiler: Preparing to save!")
         FU = FirebaseUtility(cred)
         FU.storeData(self.id,threaData)
-        print("ThreadCompiler: Preparing to save!")
         return True
     def getThreadID(self):
+        '''
+        Returns the thread id
+        Used to access documents
+        '''
         return str(self.id)
 class FirebaseUtility:
     def __init__(self,cred):
@@ -111,17 +124,24 @@ class FirebaseUtility:
                 firebase_admin.initialize_app(self.cred)
         except:
             print("FirebaseUtility:Error in cred FIX NEEDED!")
-    def documentExists(self,thread_id):
+    def documentExists(self,thread_id:"Thread parent id",thread_len:"Length of fetched thread"):
         doc_ref = self.db.collection(u'threads').document(str(thread_id))
         doc = doc = doc_ref.get()
         if doc.exists:
-            print("FirebaseUtility:Thread Already Exists")
-            return True
+            if len(doc.to_dict()['tweets']) < thread_len:
+                print("FirebaseUtility:Thread Already Exists but shorter")
+                return False
+            else:
+                print("FirebaseUtility:Thread Already Exists")
+                return True
         else:
             print('FirebaseUtility:No such Thread!')
             return False
     def storeData(self,thread_id,data:"dictionary"):
-        if not self.documentExists(thread_id):
+        '''
+        Stores the dictionary data with document name thread_id
+        '''
+        if not self.documentExists(thread_id,len(data['tweets'])):
             doc_ref = self.db.collection(u'threads').document(str(thread_id))
             doc_ref.set(data)
             print('FirebaseUtility:Thread {} Stored!'.format(str(thread_id)))
@@ -146,20 +166,31 @@ class ThreaderBot:
         fwrite.close()
         return
     def fetchTweets(self):
-        ##Fetching only mentioned tweet
-        #Retweet will also trigger this
+        '''
+        Fetches only mentioned tweets
+        retweet will trigger this aswell
+        '''
         mentions = api.mentions_timeline(self.since_id)
         mention = mentions[-1] if len(mentions) !=0 else None
         if mention:
             since_id = mention.id #Store the last id so that we can keep ourself updated
             self.store_since_id(since_id)
-        return mention
+        return mentions
     def run(self):
+        '''
+        Returns unique list of recently mentioned tweets
+        in_reply_to_status_id,in_reply_to_user_id
+        Note:Twitter doesn't allow to tweet same tweet to same reply
+        '''
         print("ThreaderBot: Running...")
-        tweet = self.fetchTweets()
-        if not tweet:
+        tweets = self.fetchTweets()
+        if not tweets:
             print("ThreaderBot: Nothing New!")
             return False
         else:
             print("ThreaderBot: Threading...")
-            return (tweet.in_reply_to_status_id,tweet.in_reply_to_user_id)
+            tweet_ids = []
+            for tweet in tweets:
+                tweet_ids.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id))
+            tweet_ids = list(set(tweet_ids))
+            return tweet_ids
