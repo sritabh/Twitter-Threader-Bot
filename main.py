@@ -10,10 +10,10 @@ from os import environ
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 # Authenticating to to Twitter
-API_KEY = "2RmSAmKyHHX2CBYSfCyjDvRHP"
-API_SKEY = "kXFwdrkPnhBpYFgopXq053CUfLJsw4lGWj5rj4W0cmlt7SfduQ"
-ACC_Token = "1353704693910921221-XmA1ZT6hcNlmyrlKFhqaQKvmQ4fd2T"
-ACC_Token_Secret = "wJ7cogcpyZtwlMN4qmpPe9wQzFKVZUeo4wudRzExqKuaz"
+API_KEY = "3ZNV1tHj4j3WN6JKjnriPthYR"
+API_SKEY = "ZOHxNBrfpEMnrOcyNd5Eb2rQb0OyWUL0JoO9CwB1VCy0A0vfca"
+ACC_Token = "1353704693910921221-6VLjs0f74mvtLrETgX2CuXJ6EVgHan"
+ACC_Token_Secret = "hPeJcfv9pFb5un5AHiFpDKfs4fhRw2OQ7emjgc0QG2jVw"
 auth = tweepy.OAuthHandler(API_KEY,API_SKEY)
 auth.set_access_token(ACC_Token,ACC_Token_Secret)
 api = tweepy.API(auth, wait_on_rate_limit=True,
@@ -179,7 +179,7 @@ class ThreaderBot:
     def run(self):
         '''
         Returns unique list of recently mentioned tweets
-        in_reply_to_status_id,in_reply_to_user_id
+        in_reply_to_status_id,in_reply_to_user_id,requested user screen_name and request id
         Note:Twitter doesn't allow to tweet same tweet to same reply
         '''
         print("ThreaderBot: Running...")
@@ -189,8 +189,35 @@ class ThreaderBot:
             return False
         else:
             print("ThreaderBot: Threading...")
-            tweet_ids = []
+            request_details = []
             for tweet in tweets:
-                tweet_ids.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id))
-            tweet_ids = list(set(tweet_ids))
-            return tweet_ids
+                request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id))
+            request_details = list(set(request_details))
+            return request_details
+    def sendResponse(self,text,request_username,rquest_id):
+        '''
+        Send response who requested the thread
+        username is required to reply
+        Note: make sure that twitter api project is created under read and write
+        '''
+        respone = "@"+request_username+" "+str(text)
+        try:
+            api.update_status(respone,rquest_id)
+            print("Request Successful")
+        except:
+            logger.error("Error replying to the tweet", exc_info=True)
+def surfBot(bot:"ThreadBot"):
+    '''
+    Runs the bot and make him awake
+    '''
+    requests = bot.run()
+    if requests:
+        for tweet_id,user_id,request_username,request_id in requests:
+            compiler = ThreadCompiler(tweet_id,user_id)
+            if compiler.save():
+                text = "Thread URL goes here"
+                bot.sendResponse(text,request_username,request_id)
+                print(compiler.getThreadID())
+    else:
+        print("Bot Surfer:Nothing Requested!")
+        return
