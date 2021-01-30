@@ -57,43 +57,142 @@ class Tweet:
         }
         return obj
 class ThreadCompiler:
-    def __init__(self,tweet_id,user_id):
+    def __init__(self,tweet_id,user_id,thread_request_id,max_tweets_to_look=100):
         self.tweet_id = tweet_id
         self.id = tweet_id ##storing parent id
-        self.user_id = user_id
+        self.user_id = user_id #thread_user_ids
+        self.tweets = None
+        self.max_tweets_to_look = max_tweets_to_look
+        self.thread_request_id = thread_request_id
     def compileTweets(self):
         '''
-        Compiles tweet of thread and return list of object of class type Tweet
+        Compiles tweet of thread
+        Compile to the parent of the child
+        return list of object of class type Tweet
         '''
-        tweets = []
+        self.tweets = []
         parent_tweet_id = self.tweet_id
-        print("ThreadCompiler: Fetching Tweets")
+        print("ThreadCompiler: Fetching Head thread!")
         while parent_tweet_id:
-            tweet = api.get_status(parent_tweet_id, tweet_mode="extended")
-            if tweet.user.id != self.user_id:
+            try:
+                tweet = api.get_status(parent_tweet_id, tweet_mode="extended")
+                if tweet.user.id != self.user_id:
+                    break
+                medias = []
+                if hasattr(tweet,"extended_entities"):
+                    if "media" in tweet.extended_entities:
+                        media_entities = tweet.extended_entities['media']
+                        for media_data in media_entities:
+                            media = {}
+                            ##Currently only planning to save photo data as it'll be transformed to PDF
+                            if media_data['type']=='photo' or media_data['type'] == 'video':
+                                media['type'] = media_data['type']
+                                media['media_url_https'] = media_data['media_url_https']
+                                media['media_url'] = media_data['media_url']
+                                media['expanded_url'] = media_data['expanded_url']
+                                medias.append(media)
+                tweetObj = Tweet(tweet.full_text,str(tweet.created_at),list(medias),parent_tweet_id,tweet.entities['urls'])
+                self.tweets.append(tweetObj)
+                parent_tweet_id = tweet.in_reply_to_status_id
+            except tweepy.TweepError as e:
+                print("ThreadCompiler:TweepyError {}".format(e))
+                #Send Response to user and end the compilation
+                raise Exception("Compiling thread top error!")
                 break
-            medias = []
-            if 'media' in tweet.entities:
-                media_entities = tweet.entities['media']
-                for media_data in media_entities:
-                    ##Currently only planning to save photo data as it'll be transformed to PDF
-                    if media_data['type']=='photo':
-                        medias.append(media_data['media_url_https'])
-            tweetObj = Tweet(tweet.full_text,str(tweet.created_at),list(medias),parent_tweet_id,tweet.entities['urls'])
-            tweets.append(tweetObj)
-            parent_tweet_id = tweet.in_reply_to_status_id
-        return list(tweets)
-    def compileThread(self,tweets:"list of object type Tweet" = None):
+        self.tweets = self.tweets[::-1]
+        return self.tweetCompilerBottom()
+        #return list(self.tweets)
+    def tweetCompilerBottom(self,since_id=None):
+        '''
+        Compiles the bottom half of the tweet by looking for child
+        '''
+        print("ThreadCompiler:Fetching Bottom thread!")
+        if not since_id:
+            looking_for = self.tweet_id
+        tweets = tweepy.Cursor(api.user_timeline,user_id=self.user_id,since_id=looking_for,trim_user=True,include_rts=False,               exclude_replies=False,tweet_mode="extended").items()
+        tweets_track = {} ##contains all tweets traced
+        bottom_thread_exists = False
+        for i in range(self.max_tweets_to_look):
+            try:
+                tweet = tweets.next()
+                if hasattr(tweet, 'in_reply_to_status_id_str') and tweet.in_reply_to_status_id:
+                    medias = []
+                    if hasattr(tweet,"extended_entities"):
+                        if "media" in tweet.extended_entities:
+                            media_entities = tweet.extended_entities['media']
+                            for media_data in media_entities:
+                                media = {}
+                                ##Currently only planning to save photo data as it'll be transformed to PDF
+                                if media_data['type']=='photo' or media_data['type'] == 'video':
+                                    media['type'] = media_data['type']
+                                    media['media_url_https'] = media_data['media_url_https']
+                                    media['media_url'] = media_data['media_url']
+                                    media['expanded_url'] = media_data['expanded_url']
+                                    medias.append(media)
+                    tweetObj = Tweet(tweet.full_text,str(tweet.created_at),list(medias),tweet.id,tweet.entities['urls'])
+                    #Saving track with respect to in_reply_to_status_id ez to look for thread
+                    #print(i)
+                    tweets_track[tweet.id] = {
+                        "tweet":tweetObj,
+                        "in_reply_to_status_id":tweet.in_reply_to_status_id
+                    }
+            except StopIteration:
+                bottom_thread_exists = True #No more results might have reached to since_id and hence thread exists
+                print("ThreadCompiler: BottomThread - No more result found")
+                break
+            except tweepy.RateLimitError as e:
+                logging.error("Twitter api rate limit reached Error-{}".format(e))
+                time.sleep(60) ##Sleep and retry after a while
+                continue
+            except tweepy.TweepError as e:
+                print("ThreadCompiler:TweepyError {}".format(e))
+                #Send Response to user and end the compilation
+                raise Exception("Compiling bottom thread error!")
+                break
+        if bottom_thread_exists:
+            self.fetchBottomThread(tweets_track)
+        return self.tweets
+    def fetchBottomThread(self,tweets_track,tweet_id=None):
+        if not tweet_id:
+            tweet_id = self.tweet_id
+        '''
+        Finding Longest Thread till tweet_id
+        if multiple exists returns the on which comes first
+        '''
+        print("ThreadCompiler:Cooking Bottom Threads!")
+        i=0
+        threads = {}
+        while i<len(list(tweets_track)):
+            looking_for = list(tweets_track)[i]
+            child_id = looking_for
+            i +=1
+            count = 0
+            possible_threads = []
+            while looking_for:
+                if looking_for in tweets_track:
+                    count +=1
+                    possible_threads.append(tweets_track[looking_for]['tweet'])
+                    looking_for = tweets_track[looking_for]["in_reply_to_status_id"]
+                elif looking_for == tweet_id: #Thread I was looking for
+                    threads[child_id] = possible_threads
+                    break
+                else:
+                    break
+            i += count - 1
+        thread_id = max(threads, key=lambda k: len(threads[k]))
+        self.tweets += threads[thread_id][::-1]
+        print("ThreadCompiler:Bottom Threads prepared!")
+        return threads[thread_id][::-1]
+    def compileThread(self):
         '''
         Compiles Thread of tweets and user and return object of class type userThread
         '''
         print("ThreadCompiler: Compiling Thread")
-        if not tweets:
-            tweets = self.compileTweets()
-        tweets = tweets[::-1]
-        self.id = tweets[0].tweet_id ##first id is used to save the thread
+        if not self.tweets:
+            self.compileTweets()
+        self.id = self.tweets[0].tweet_id ##first id is used to save the thread
         user = api.get_user(self.user_id)
-        return userThread(self.user_id,user.name,user.screen_name,user.profile_image_url_https,tweets)
+        return userThread(self.user_id,user.name,user.screen_name,user.profile_image_url_https,self.tweets)
     def save(self,threaData:"Dictionar"=None):
         '''
         threaData: Takes dictionary
@@ -170,11 +269,14 @@ class ThreaderBot:
         Fetches only mentioned tweets
         retweet will trigger this aswell
         '''
+        self.since_id = self.retrieve_since_id()
         mentions = api.mentions_timeline(self.since_id)
         mention = mentions[-1] if len(mentions) !=0 else None
         if mention:
+            print("Storing The last mentioned")
             since_id = mention.id #Store the last id so that we can keep ourself updated
             self.store_since_id(since_id)
+            self.since_id = since_id #Update the bot aswell
         return mentions
     def run(self):
         '''
@@ -183,17 +285,21 @@ class ThreaderBot:
         Note:Twitter doesn't allow to tweet same tweet to same reply
         '''
         print("ThreaderBot: Running...")
-        tweets = self.fetchTweets()
-        if not tweets:
-            print("ThreaderBot: Nothing New!")
-            return False
-        else:
-            print("ThreaderBot: Threading...")
-            request_details = []
-            for tweet in tweets:
-                request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id))
-            request_details = list(set(request_details))
-            return request_details
+        try:
+            tweets = self.fetchTweets()
+            if not tweets:
+                print("ThreaderBot: Nothing New!")
+                return False
+            else:
+                print("ThreaderBot: Threading...")
+                request_details = []
+                for tweet in tweets:
+                    request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id))
+                request_details = list(set(request_details))
+                return request_details
+        except tweepy.TweepError as e:
+                logging.error("ThreaderBot: Twitter api Error {}".format(e))
+                return
     def sendResponse(self,text,request_username,rquest_id):
         '''
         Send response who requested the thread
@@ -212,12 +318,18 @@ def surfBot(bot:"ThreadBot"):
     '''
     requests = bot.run()
     if requests:
-        for tweet_id,user_id,request_username,request_id in requests:
-            compiler = ThreadCompiler(tweet_id,user_id)
-            if compiler.save():
-                text = "Thread URL goes here"
+        for in_reply_to_tweet_id,in_reply_to_user_id,request_username,request_id in requests:
+            try:
+                compiler = ThreadCompiler(in_reply_to_tweet_id,in_reply_to_user_id,request_id)
+                if compiler.save():
+                    text = "Thread URL goes here"
+                    bot.sendResponse(text,request_username,request_id)
+                    print(compiler.getThreadID())
+                else:
+                    print("Bot Surfer:Nothing Requested!")
+                    return
+            except Exception as e:
+                ##Send response as we got error
+                text = "Looks Like thread is too old or something went wrong!\nTry different method check here for help - https://sobydamn.github.io/TwitterThread/"
                 bot.sendResponse(text,request_username,request_id)
-                print(compiler.getThreadID())
-    else:
-        print("Bot Surfer:Nothing Requested!")
-        return
+                print("SurfBot: Error - {}".format(e))
