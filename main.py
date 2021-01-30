@@ -179,10 +179,14 @@ class ThreadCompiler:
                 else:
                     break
             i += count - 1
-        thread_id = max(threads, key=lambda k: len(threads[k]))
-        self.tweets += threads[thread_id][::-1]
-        print("ThreadCompiler:Bottom Threads prepared!")
-        return threads[thread_id][::-1]
+        if len(threads) > 0:
+            thread_id = max(threads, key=lambda k: len(threads[k]))
+            self.tweets += threads[thread_id][::-1]
+            print("ThreadCompiler:Bottom Threads prepared!")
+            return threads[thread_id][::-1]
+        else:
+            print("ThreadCompiler:Bottom Thread does not exists!")
+            return []
     def compileThread(self):
         '''
         Compiles Thread of tweets and user and return object of class type userThread
@@ -257,9 +261,7 @@ class ThreaderBot:
         fread.close()
         return since_id
 
-    def store_since_id(self,since_id=None, file_name="since_id.txt"):
-        if not since_id:
-            since_id = self.since_id
+    def store_since_id(self,since_id, file_name="since_id.txt"):
         fwrite = open(file_name, 'w')
         fwrite.write(str(since_id))
         fwrite.close()
@@ -271,9 +273,9 @@ class ThreaderBot:
         '''
         self.since_id = self.retrieve_since_id()
         mentions = api.mentions_timeline(self.since_id)
-        mention = mentions[-1] if len(mentions) !=0 else None
+        mention = mentions[0] if len(mentions) !=0 else None
         if mention:
-            print("Storing The last mentioned")
+            print("Storing The last mentioned",mention.id)
             since_id = mention.id #Store the last id so that we can keep ourself updated
             self.store_since_id(since_id)
             self.since_id = since_id #Update the bot aswell
