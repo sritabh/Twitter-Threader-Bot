@@ -123,7 +123,7 @@ class ThreadCompiler:
         print("ThreadCompiler:Fetching Bottom thread!")
         if not since_id:
             looking_for = self.tweet_id
-        tweets = tweepy.Cursor(api.user_timeline,user_id=self.user_id,since_id=looking_for,trim_user=True,include_rts=False,               exclude_replies=False,tweet_mode="extended").items()
+        tweets = tweepy.Cursor(api.user_timeline,user_id=self.user_id,since_id=looking_for,trim_user=True,include_rts=False,exclude_replies=False,tweet_mode="extended").items()
         tweets_track = {} ##contains all tweets traced
         bottom_thread_exists = False
         for i in range(self.max_tweets_to_look):
