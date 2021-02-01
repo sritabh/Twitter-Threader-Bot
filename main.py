@@ -362,6 +362,7 @@ def surfBot(bot:"ThreadBot"):
                 print("SurfBot: Error - {}".format(e))
 bot = ThreaderBot()
 ##Surfing using bot
+#Deploying
 while True:
     surfBot(bot)
     time.sleep(5)
