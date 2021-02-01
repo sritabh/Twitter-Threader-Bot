@@ -10,10 +10,10 @@ from os import environ
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 # Authenticating to to Twitter
-API_KEY = "3ZNV1tHj4j3WN6JKjnriPthYR"
-API_SKEY = "ZOHxNBrfpEMnrOcyNd5Eb2rQb0OyWUL0JoO9CwB1VCy0A0vfca"
-ACC_Token = "1353704693910921221-6VLjs0f74mvtLrETgX2CuXJ6EVgHan"
-ACC_Token_Secret = "hPeJcfv9pFb5un5AHiFpDKfs4fhRw2OQ7emjgc0QG2jVw"
+API_KEY = environ["API_KEY"]
+API_SKEY = environ["API_SKEY"]
+ACC_Token = environ["ACC_Token"]
+ACC_Token_Secret = environ["ACC_Token_Secret"]
 auth = tweepy.OAuthHandler(API_KEY,API_SKEY)
 auth.set_access_token(ACC_Token,ACC_Token_Secret)
 api = tweepy.API(auth, wait_on_rate_limit=True,
