@@ -57,13 +57,20 @@ class Tweet:
         }
         return obj
 class ThreadCompiler:
-    def __init__(self,tweet_id,user_id,thread_request_id,max_tweets_to_look=100):
+    def __init__(self,tweet_id,user_id,thread_request_id,easy_compile=True,max_tweets_to_look=500):
+        '''
+        tweet_id - the id of the tweet under which user requested
+        user_id - id of the thread owner
+        thread_request_id - id of the user who requested thread compile
+        easy_compile - rolling up to the parent (use when thread is too old)
+        '''
         self.tweet_id = tweet_id
         self.id = tweet_id ##storing parent id
         self.user_id = user_id #thread_user_ids
         self.tweets = None
         self.max_tweets_to_look = max_tweets_to_look
         self.thread_request_id = thread_request_id
+        self.easy_compile = easy_compile #if easy compile we won't be checking Bottom thread just roll to the parent of thread
     def compileTweets(self):
         '''
         Compiles tweet of thread
@@ -100,7 +107,11 @@ class ThreadCompiler:
                 raise Exception("Compiling thread top error!")
                 break
         self.tweets = self.tweets[::-1]
-        return self.tweetCompilerBottom()
+        if self.easy_compile:
+            print("ThreadCompiler:Easy Compile Requested!")
+            return self.tweets
+        else:
+            return self.tweetCompilerBottom()
         #return list(self.tweets)
     def tweetCompilerBottom(self,since_id=None):
         '''
@@ -152,6 +163,9 @@ class ThreadCompiler:
         #return tweets_track
         if bottom_thread_exists:
             self.fetchBottomThread(tweets_track)
+        else:
+            #Respone thread is to old
+            pass
         return self.tweets
     def fetchBottomThread(self,tweets_track,tweet_id=None):
         if not tweet_id:
@@ -297,7 +311,10 @@ class ThreaderBot:
                 print("ThreaderBot: Threading...")
                 request_details = []
                 for tweet in tweets:
-                    request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id))
+                    easy_compile = True
+                    if "compile" in tweet.text.lower():
+                        easy_compile = False
+                    request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id,easy_compile))
                 request_details = list(set(request_details))
                 return request_details
         except tweepy.TweepError as e:
@@ -321,11 +338,11 @@ def surfBot(bot:"ThreadBot"):
     '''
     requests = bot.run()
     if requests:
-        for in_reply_to_tweet_id,in_reply_to_user_id,request_username,request_id in requests:
+        for in_reply_to_tweet_id,in_reply_to_user_id,request_username,request_id,easy_compile in requests:
             try:
-                compiler = ThreadCompiler(in_reply_to_tweet_id,in_reply_to_user_id,request_id)
+                compiler = ThreadCompiler(in_reply_to_tweet_id,in_reply_to_user_id,request_id,easy_compile)
                 if compiler.save():
-                    text = "Thread URL goes here"
+                    text = "Thread URL goes here and Thread Length - "+str(len(compiler.tweets))
                     bot.sendResponse(text,request_username,request_id)
                     print(compiler.getThreadID())
                 else:
