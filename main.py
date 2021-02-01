@@ -5,7 +5,6 @@ import random
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-import utility
 import os
 from os import environ
 logging.basicConfig(level=logging.INFO)
@@ -20,7 +19,21 @@ auth.set_access_token(ACC_Token,ACC_Token_Secret)
 api = tweepy.API(auth, wait_on_rate_limit=True,
     wait_on_rate_limit_notify=True)
 #Credential for firebase
-cred = credentials.Certificate(utility.googleCreds())
+def googleCreds():
+    creds = {
+    "type": "service_account",
+    "project_id": "twitter-threader",
+    "private_key_id": environ["private_key_id"],
+    "private_key": environ["private_key"],
+    "client_email": environ["client_email"],
+    "client_id": environ["client_id"],
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-rh7d4%40twitter-threader.iam.gserviceaccount.com"
+    }
+    return creds
+cred = credentials.Certificate(googleCreds())
 
 class userThread:
     def __init__(self,id, name,username,profile_img,tweets):
