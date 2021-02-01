@@ -19,8 +19,7 @@ auth.set_access_token(ACC_Token,ACC_Token_Secret)
 api = tweepy.API(auth, wait_on_rate_limit=True,
     wait_on_rate_limit_notify=True)
 #Credential for firebase
-def googleCreds():
-    creds = {
+google_creds = {
     "type": "service_account",
     "project_id": "twitter-threader",
     "private_key_id": environ["private_key_id"],
@@ -32,8 +31,7 @@ def googleCreds():
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-rh7d4%40twitter-threader.iam.gserviceaccount.com"
     }
-    return creds
-#cred = credentials.Certificate(googleCreds())
+cred = credentials.Certificate(google_creds)
 
 class userThread:
     def __init__(self,id, name,username,profile_img,tweets):
@@ -378,5 +376,5 @@ bot = ThreaderBot()
 #Deploying
 while True:
     #surfBot(bot)
-    print(googleCreds())
+    print(google_creds)
     time.sleep(5)
