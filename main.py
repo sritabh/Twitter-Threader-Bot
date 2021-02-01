@@ -23,6 +23,9 @@ cred = credentials.Certificate("twitter-threader-firebase-adminsdk-rh7d4-60df64a
 
 class userThread:
     def __init__(self,id, name,username,profile_img,tweets):
+        '''
+        id: profile id of thread owner
+        '''
         self.id = id
         self.name = name
         self.username = username
@@ -34,11 +37,11 @@ class userThread:
             'name':self.name,
             'username':self.username,
             'profile_img':self.profile_img,
-            'tweets':{}
+            'tweets':[]
         }
         for tweet in self.tweets:
             tweet_id = tweet.tweet_id
-            obj['tweets'][str(tweet_id)] = tweet.to_dict()
+            obj['tweets'].append(tweet.to_dict())
         return obj
 class Tweet:
     def __init__(self, text,date,medias,tweet_id,urls):
@@ -51,7 +54,7 @@ class Tweet:
         obj = {
             'text':self.text,
             'date':self.date,
-            'tweet_id':self.tweet_id,
+            'tweet_id':str(self.tweet_id),
             'urls':self.urls,
             'medias':self.medias
         }
