@@ -149,6 +149,7 @@ class ThreadCompiler:
                 #Send Response to user and end the compilation
                 raise Exception("Compiling bottom thread error!")
                 break
+        #return tweets_track
         if bottom_thread_exists:
             self.fetchBottomThread(tweets_track)
         return self.tweets
@@ -178,7 +179,7 @@ class ThreadCompiler:
                     break
                 else:
                     break
-            i += count - 1
+            #i += count - 1
         if len(threads) > 0:
             thread_id = max(threads, key=lambda k: len(threads[k]))
             self.tweets += threads[thread_id][::-1]
@@ -186,7 +187,7 @@ class ThreadCompiler:
             return threads[thread_id][::-1]
         else:
             print("ThreadCompiler:Bottom Thread does not exists!")
-            return []
+            return
     def compileThread(self):
         '''
         Compiles Thread of tweets and user and return object of class type userThread
