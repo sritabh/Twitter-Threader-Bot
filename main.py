@@ -377,5 +377,6 @@ bot = ThreaderBot()
 ##Surfing using bot
 #Deploying
 while True:
-    surfBot(bot)
+    #surfBot(bot)
+    print(environ["private_key_id"])
     time.sleep(5)
