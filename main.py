@@ -5,6 +5,7 @@ import random
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+import utility
 import os
 from os import environ
 logging.basicConfig(level=logging.INFO)
@@ -19,7 +20,7 @@ auth.set_access_token(ACC_Token,ACC_Token_Secret)
 api = tweepy.API(auth, wait_on_rate_limit=True,
     wait_on_rate_limit_notify=True)
 #Credential for firebase
-cred = credentials.Certificate("google-credentials.json")
+cred = credentials.Certificate(utility.googleCreds())
 
 class userThread:
     def __init__(self,id, name,username,profile_img,tweets):

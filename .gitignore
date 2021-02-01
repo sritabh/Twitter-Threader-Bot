@@ -1,3 +1,4 @@
 *.ipynb
 .env
+*.pyc
 google-credentials.json
