@@ -33,7 +33,7 @@ def googleCreds():
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-rh7d4%40twitter-threader.iam.gserviceaccount.com"
     }
     return creds
-cred = credentials.Certificate(googleCreds())
+#cred = credentials.Certificate(googleCreds())
 
 class userThread:
     def __init__(self,id, name,username,profile_img,tweets):
