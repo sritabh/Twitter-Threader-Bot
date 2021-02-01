@@ -23,7 +23,7 @@ google_creds = {
     "type": "service_account",
     "project_id": "twitter-threader",
     "private_key_id": environ["private_key_id"],
-    "private_key": environ["private_key"],
+    "private_key": environ["private_key"].replace("\\n", "\n"),
     "client_email": environ["client_email"],
     "client_id": environ["client_id"],
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -375,6 +375,5 @@ bot = ThreaderBot()
 ##Surfing using bot
 #Deploying
 while True:
-    #surfBot(bot)
-    print(google_creds)
+    surfBot(bot)
     time.sleep(5)
