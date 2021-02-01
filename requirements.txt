@@ -1,0 +1,2 @@
+tweepy==3.10.0
+firebase_admin==4.5.1
