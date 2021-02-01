@@ -19,7 +19,7 @@ auth.set_access_token(ACC_Token,ACC_Token_Secret)
 api = tweepy.API(auth, wait_on_rate_limit=True,
     wait_on_rate_limit_notify=True)
 #Credential for firebase
-cred = credentials.Certificate("twitter-threader-firebase-adminsdk-rh7d4-60df64a83c.json")
+cred = credentials.Certificate("google-credentials.json")
 
 class userThread:
     def __init__(self,id, name,username,profile_img,tweets):
