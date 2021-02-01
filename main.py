@@ -60,7 +60,7 @@ class Tweet:
         }
         return obj
 class ThreadCompiler:
-    def __init__(self,tweet_id,user_id,thread_request_id,easy_compile=True,max_tweets_to_look=500):
+    def __init__(self,tweet_id,user_id,thread_request_id,easy_compile=True,max_tweets_to_look=5000):
         '''
         tweet_id - the id of the tweet under which user requested
         user_id - id of the thread owner
@@ -128,6 +128,8 @@ class ThreadCompiler:
         bottom_thread_exists = False
         for i in range(self.max_tweets_to_look):
             try:
+                if i%50==0:
+                    print(i)
                 tweet = tweets.next()
                 if hasattr(tweet, 'in_reply_to_status_id_str') and tweet.in_reply_to_status_id:
                     medias = []
@@ -168,6 +170,7 @@ class ThreadCompiler:
             self.fetchBottomThread(tweets_track)
         else:
             #Respone thread is to old
+            raise Exception("ThreadCompiler:Thread is too old or too many tweets!")
             pass
         return self.tweets
     def fetchBottomThread(self,tweets_track,tweet_id=None):
@@ -345,7 +348,7 @@ def surfBot(bot:"ThreadBot"):
             try:
                 compiler = ThreadCompiler(in_reply_to_tweet_id,in_reply_to_user_id,request_id,easy_compile)
                 if compiler.save():
-                    text = "Thread URL goes here and Thread Length - "+str(len(compiler.tweets))
+                    text = "Here is your compiled thred of length - "+str(len(compiler.tweets)) +"\nhttps://sobydamn.github.io/TwitterThread/thread.html?threadID="+str(compiler.id)
                     bot.sendResponse(text,request_username,request_id)
                     print(compiler.getThreadID())
                 else:
@@ -356,3 +359,8 @@ def surfBot(bot:"ThreadBot"):
                 text = "Looks Like thread is too old or something went wrong!\nTry different method check here for help - https://sobydamn.github.io/TwitterThread/"
                 bot.sendResponse(text,request_username,request_id)
                 print("SurfBot: Error - {}".format(e))
+bot = ThreaderBot()
+##Surfing using bot
+while True:
+    surfBot(bot)
+    time.sleep(5)
