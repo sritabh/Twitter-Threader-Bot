@@ -76,7 +76,7 @@ class ThreadCompiler:
         '''
         tweet_id - the id of the tweet under which user requested
         user_id - id of the thread owner
-        thread_request_id - id of the user who requested thread compile
+        thread_request_id - id of the user's tweet who requested thread compile
         easy_compile - rolling up to the parent (use when thread is too old)
         '''
         self.tweet_id = tweet_id
@@ -141,9 +141,9 @@ class ThreadCompiler:
         for i in range(self.max_tweets_to_look):
             try:
                 if i%50==0:
-                    print(i)
+                    print("ThreadCompiler: Searched {} so far.".format(i))
                 tweet = tweets.next()
-                if hasattr(tweet, 'in_reply_to_status_id_str') and tweet.in_reply_to_status_id:
+                if hasattr(tweet, 'in_reply_to_status_id_str') and tweet.in_reply_to_status_id and tweet.id != self.thread_request_id:
                     medias = []
                     if hasattr(tweet,"extended_entities"):
                         if "media" in tweet.extended_entities:
@@ -316,14 +316,15 @@ class ThreaderBot:
     def run(self):
         '''
         Returns unique list of recently mentioned tweets
-        in_reply_to_status_id,in_reply_to_user_id,requested user screen_name and request id
+        in_reply_to_status_id,in_reply_to_user_id,requested user screen_name and
+        request_id - id of the tweet request
         Note:Twitter doesn't allow to tweet same tweet to same reply
         '''
-        print("ThreaderBot: Running...")
+        #print("ThreaderBot: Running...")
         try:
             tweets = self.fetchTweets()
             if not tweets:
-                print("ThreaderBot: Nothing New!")
+                #print("ThreaderBot: Nothing New!")
                 return False
             else:
                 print("ThreaderBot: Threading...")
@@ -347,7 +348,7 @@ class ThreaderBot:
         respone = "@"+request_username+" "+str(text)
         try:
             api.update_status(respone,rquest_id)
-            print("Request Successful")
+            print("Response sent successfully")
         except:
             logger.error("Error replying to the tweet", exc_info=True)
 def surfBot(bot:"ThreadBot"):
@@ -364,7 +365,7 @@ def surfBot(bot:"ThreadBot"):
                     bot.sendResponse(text,request_username,request_id)
                     print(compiler.getThreadID())
                 else:
-                    print("Bot Surfer:Nothing Requested!")
+                    #print("Bot Surfer:Nothing Requested!")
                     return
             except Exception as e:
                 ##Send response as we got error
@@ -374,6 +375,7 @@ def surfBot(bot:"ThreadBot"):
 bot = ThreaderBot()
 ##Surfing using bot
 #Deploying
+print("Surfing bot......")
 while True:
     surfBot(bot)
     time.sleep(5)
