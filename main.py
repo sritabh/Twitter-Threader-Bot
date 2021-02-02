@@ -363,7 +363,6 @@ def surfBot(bot:"ThreadBot"):
                 if compiler.save():
                     text = "Here is your compiled thread of length - "+str(len(compiler.tweets)) +"\nhttps://sobydamn.github.io/TwitterThread/thread.html?threadID="+str(compiler.id)
                     bot.sendResponse(text,request_username,request_id)
-                    print(compiler.getThreadID())
                 else:
                     #print("Bot Surfer:Nothing Requested!")
                     return
