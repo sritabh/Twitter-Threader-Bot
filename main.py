@@ -304,15 +304,23 @@ class ThreaderBot:
         Fetches only mentioned tweets
         retweet will trigger this aswell
         '''
-        self.since_id = self.retrieve_since_id()
-        mentions = api.mentions_timeline(self.since_id)
-        mention = mentions[0] if len(mentions) !=0 else None
-        if mention:
-            print("Storing The last mentioned",mention.id)
-            since_id = mention.id #Store the last id so that we can keep ourself updated
-            self.store_since_id(since_id)
-            self.since_id = since_id #Update the bot aswell
-        return mentions
+        try:
+            self.since_id = self.retrieve_since_id()
+            mentions = api.mentions_timeline(self.since_id)
+            mention = mentions[0] if len(mentions) !=0 else None
+            if mention:
+                print("Storing The last mentioned",mention.id)
+                since_id = mention.id #Store the last id so that we can keep ourself updated
+                self.store_since_id(since_id)
+                self.since_id = since_id #Update the bot aswell
+            return mentions
+        except tweepy.TweepError as e:
+            logging.error("ThreaderBot - Fetchingtweet(): Twitter api Error {}".format(e))
+            return
+        except tweepy.RateLimitError as e:
+            logging.error("ThreaderBot - Fetchingtweet(): Twitter api rate limit reached Error-{}".format(e))
+            time.sleep(60) ##Sleep and retry after a while
+            return
     def run(self):
         '''
         Returns unique list of recently mentioned tweets
@@ -321,30 +329,26 @@ class ThreaderBot:
         Note:Twitter doesn't allow to tweet same tweet to same reply
         '''
         #print("ThreaderBot: Running...")
-        try:
-            tweets = self.fetchTweets()
-            if not tweets:
-                #print("ThreaderBot: Nothing New!")
-                return False
-            else:
-                print("ThreaderBot: Threading...")
-                request_details = []
-                for tweet in tweets:
-                    if "ping" in tweet.text.lower():
-                        self.sendResponse("Pong!",tweet.user.screen_name,tweet.id)
-                    if hasattr(tweet, 'in_reply_to_status_id_str') and tweet.in_reply_to_status_id:
-                        tweetTxt = tweet.text.lower()
-                        if "compile" or "ezcompile" in tweetTxt.split(" "):
+        tweets = self.fetchTweets()
+        if not tweets:
+            #print("ThreaderBot: Nothing New!")
+            return False
+        else:
+            print("ThreaderBot: Threading...")
+            request_details = []
+            for tweet in tweets:
+                if "ping" in tweet.text.lower():
+                    self.sendResponse("Pong!",tweet.user.screen_name,tweet.id)
+                if hasattr(tweet, 'in_reply_to_status_id_str') and tweet.in_reply_to_status_id:
+                    tweetTxt = tweet.text.lower()
+                    if "compile" in tweetTxt.split(" ") or "ezcompile" in tweetTxt.split(" "):
+                        easy_compile = True
+                        if "compile" in tweetTxt.split(" "):
+                            easy_compile = False
+                        elif "compile" and "ezcompile" in tweetTxt.split(" "):
                             easy_compile = True
-                            if "compile" in tweetTxt.split(" "):
-                                easy_compile = False
-                            elif "compile" and "ezcompile" in tweetTxt.split(" "):
-                                easy_compile = True
-                            request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id,easy_compile))
-                return request_details if len(request_details) > 0 else False
-        except tweepy.TweepError as e:
-                logging.error("ThreaderBot: Twitter api Error {}".format(e))
-                return
+                        request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id,easy_compile))
+            return request_details if len(request_details) > 0 else False
     def sendResponse(self,text,request_username,rquest_id):
         '''
         Send response who requested the thread
@@ -356,7 +360,7 @@ class ThreaderBot:
             api.update_status(respone,rquest_id)
             print("Response sent successfully")
         except tweepy.TweepError as e:
-            print("Error replying to the tweet, {}".format(e))
+            print("ThreaderBot:Error replying to the tweet, {}".format(e))
 def surfBot(bot:"ThreadBot"):
     '''
     Runs the bot and make him awake
