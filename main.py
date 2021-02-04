@@ -348,6 +348,10 @@ class ThreaderBot:
                         elif "compile" and "ezcompile" in tweetTxt.split(" "):
                             easy_compile = True
                         request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id,easy_compile))
+                    else:
+                        print("ThreaderBot: Nevermind")
+                else:
+                    print("ThreaderBot: Nothing to compile")
             return request_details if len(request_details) > 0 else False
     def sendResponse(self,text,request_username,rquest_id):
         '''
