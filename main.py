@@ -16,8 +16,8 @@ ACC_Token = environ["ACC_Token"]
 ACC_Token_Secret = environ["ACC_Token_Secret"]
 auth = tweepy.OAuthHandler(API_KEY,API_SKEY)
 auth.set_access_token(ACC_Token,ACC_Token_Secret)
-api = tweepy.API(auth, wait_on_rate_limit=True,
-    wait_on_rate_limit_notify=True)
+api = tweepy.API(auth, wait_on_rate_limit=False,
+    wait_on_rate_limit_notify=False)
 #Credential for firebase
 google_creds = {
     "type": "service_account",
