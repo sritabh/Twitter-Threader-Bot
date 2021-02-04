@@ -392,4 +392,4 @@ bot = ThreaderBot()
 print("Surfing bot......")
 while True:
     surfBot(bot)
-    time.sleep(5)
+    time.sleep(30) #30 sec
