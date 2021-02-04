@@ -314,12 +314,13 @@ class ThreaderBot:
                 self.store_since_id(since_id)
                 self.since_id = since_id #Update the bot aswell
             return mentions
+        except tweepy.RateLimitError as e:
+            sleepTime = 120 #In seconds
+            logging.error("ThreaderBot - Fetchingtweet(): Twitter api rate limit reached Error Sleeping for {}, Error-{}".format(sleepTime,e))
+            time.sleep(sleepTime) ##Sleep and retry after a while
+            return
         except tweepy.TweepError as e:
             logging.error("ThreaderBot - Fetchingtweet(): Twitter api Error {}".format(e))
-            return
-        except tweepy.RateLimitError as e:
-            logging.error("ThreaderBot - Fetchingtweet(): Twitter api rate limit reached Error-{}".format(e))
-            time.sleep(60) ##Sleep and retry after a while
             return
     def run(self):
         '''
