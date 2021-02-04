@@ -356,7 +356,7 @@ class ThreaderBot:
             api.update_status(respone,rquest_id)
             print("Response sent successfully")
         except tweepy.TweepError as e:
-            print("Error replying to the tweet, {e}".format(e))
+            print("Error replying to the tweet, {}".format(e))
 def surfBot(bot:"ThreadBot"):
     '''
     Runs the bot and make him awake
