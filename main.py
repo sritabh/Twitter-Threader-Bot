@@ -333,11 +333,14 @@ class ThreaderBot:
                     if "ping" in tweet.text.lower():
                         self.sendResponse("Pong!",tweet.user.screen_name,tweet.id)
                     if hasattr(tweet, 'in_reply_to_status_id_str') and tweet.in_reply_to_status_id:
-                        easy_compile = True
-                        if "compile" in tweet.text.lower():
-                            easy_compile = False
-                        request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id,easy_compile))
-                request_details = list(set(request_details))
+                        tweetTxt = tweet.text.lower()
+                        if "compile" or "ezcompile" in tweetTxt.split(" "):
+                            easy_compile = True
+                            if "compile" in tweetTxt.split(" "):
+                                easy_compile = False
+                            elif "compile" and "ezcompile" in tweetTxt.split(" "):
+                                easy_compile = True
+                            request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id,easy_compile))
                 return request_details if len(request_details) > 0 else False
         except tweepy.TweepError as e:
                 logging.error("ThreaderBot: Twitter api Error {}".format(e))
