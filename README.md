@@ -355,7 +355,7 @@
                     returns false if <i>fetchTweets()</i> method returns empty array else return array of requests as tuples if it's a reply under a tweet with text containing <b>compile</b> or <b>ezcompile</b>
                     <br>
                     tuple - 
-                    <i>(in_reply_to_status_id,in_reply_to_user_id,screen_name,id,easy_compile)</i>
+                    <i>(in_reply_to_tweet_id,in_reply_to_user_id,request_username,request_user_id,request_id,easy_compile,dm_request)</i>
                     <dl>
                         <dt>Returned tuple elements</dt>
                         <dd>
@@ -363,11 +363,15 @@
                             <br>
                             in_reply_to_user_id - user id of the tweet which user has mentioned us.
                             <br>
-                            screen_name - username of the twitter id who has sent the compile request(used to respond)
+                            request_username - username of the twitter id who has sent the compile request(used to respond)
                             <br>
-                            id - id of the request tweet
+                            request_user_id - id of the user who has made the request
+                            <br>
+                            request_id - id of the request tweet
                             <br>
                             easy_compile - whether the compile method is ezcompile or not (bool)
+                            <br>
+                            dm_request - whether the request wants respone as direct message of not (bool)
                         </dd>
                     </dl>
                 </dd>
