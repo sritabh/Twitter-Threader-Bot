@@ -362,7 +362,7 @@ class ThreaderBot:
         '''
         respone = "@"+request_username+" "+str(text)
         try:
-            api.update_status(respone,rquest_id)
+            api.update_status(respone,in_reply_to_status_id=rquest_id,possibly_sensitive=False)
             print("Response sent successfully")
         except tweepy.TweepError as e:
             print("ThreaderBot:Error replying to the tweet, {}".format(e))
