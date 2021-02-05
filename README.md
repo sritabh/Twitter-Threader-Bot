@@ -22,7 +22,9 @@
                 </li>
             </ul>
         </li>
-        <li><a href="#surfing-method">surfBot(arg)</a></li>
+        <li><a href="#surfing-method">surfBot(args)</a></li>
+        <li><a href="#responseGen-method">responseGen(args)</a></li>
+        <li><a href="https://sobydamn.github.io/TwitterThread/#how-to-box">How to use?</a></li>
     </ul>
 <hr>
 <h2 id="about">About</h2>
@@ -387,6 +389,22 @@
                         </dd>
                     </dl>
                 </dd>
+                <dt><h4>sendResponseDirectMessage(self,text,id)</h4></dt>
+                <dd>
+                    sends response as direct message.
+                </dd>
+                <dd>
+                    <dl>
+                        <dt>args:</dt>
+                        <dd>
+                            text - string containing response text
+                            <br>
+                            id - user id
+                            <br>
+                            <b><i>Note: read and write permissions are required from twitter api project</i></b>
+                        </dd>
+                    </dl>
+                </dd>
             </dl>
         </dd>
     </dl>
@@ -398,5 +416,19 @@
     <dt><h3>Arguments:</h3></dt>
     <dd>
         bot - <a href="#method-ThreaderBot">ThreaderBot</a> object.
+    </dd>
+</dl>
+<dl>
+    <dt><h2><strong><a name="responseGen-method">responseGen(link,tweetText,thread_len)</a></strong></h2></dt>
+    <dd>
+        returns random response text
+    </dd>
+    <dt><h3>Arguments:</h3></dt>
+    <dd>
+        link - link of the Thread
+        <br>
+        tweetText - text of a tweet to be included with response text
+        <br>
+        thread_len - length of the thread
     </dd>
 </dl>
