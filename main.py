@@ -368,7 +368,7 @@ class ThreaderBot:
             api.update_status(response,in_reply_to_status_id=rquest_id,possibly_sensitive=False)
             print("Response sent successfully")
         except tweepy.TweepError as e:
-            print("ThreaderBot:Error replying to the tweet, {}".format(e))
+            print("ThreaderBot:Error replying '{}' to the tweet, {}".format(text,e))
     def sendResponseDirectMessage(self,text,id):
         '''
         Send response who requested the thread
@@ -380,13 +380,13 @@ class ThreaderBot:
             api.send_direct_message(recipient_id=id,text=response)
             print("Response sent as DM successfully")
         except tweepy.TweepError as e:
-            print("ThreaderBot:Error in sending dm response, {}".format(e))
+            print("ThreaderBot:Error in sending '{}' as dm response, {}".format(text,e))
 def responseGen(link,tweetText,thread_len):
     response_first_half = ["Hey check the compiled thread of length {} - ".format(str(thread_len)),"Requested thread of size {} - compiled ".format(str(thread_len)),"Here is your requested thread - ","Always here to help check your thread - ","Happy to help you thread is compiled - ","Look what I cooked,it's your thread - ","Sup buddy,requested something? Here it is - ","That was tough still I made it for you check your compiled thread - ","Sorry for the delay, Here is your compilation - ","Ai! Ai! Captain,Your thread - ","Yoda I am! and thread here is - ","Tough day? well I can't do any thing except this beautiful thread - ","I am Alive!..oops..here is what you requested - ","Hola! take it - "]
     response_last_part = ["Read it here \n","check here \n","Here - ","Visit - ","here you go \n","Read here \n"]
     startText = response_first_half[random.randint(0,len(response_first_half)-1)]
     endText = response_last_part[random.randint(0,len(response_last_part)-1)]
-    textLength = 280 - len(startText)+len(endText)+len(link)+10
+    textLength = 270 - (len(startText)+len(endText)+len(link)+random.randint(5,20))
     response = startText + '"{}...." '.format(tweetText[0:textLength]) + endText + link
     return response
 def surfBot(bot:"ThreadBot"):
