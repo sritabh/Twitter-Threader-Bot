@@ -24,6 +24,8 @@
         </li>
         <li><a href="#surfing-method">surfBot(args)</a></li>
         <li><a href="#responseGen-method">responseGen(args)</a></li>
+        <li><a href="#running-bot">Surfing with the bot</a></li>
+    </ul>
         <li><a href="https://sobydamn.github.io/TwitterThread/#how-to-box">How to use?</a></li>
     </ul>
 <hr>
@@ -32,6 +34,7 @@
     Twitter has many great people sharing valuable information in the form of threads.
     This is a twitter bot which can be used to compile threads and view it at one place or share it with others, this can also be used to print the thread and save it as pdf format for later consumption.
     </p>
+<hr>
 <h2><strong><a name="method-userThread">userThread(id, name,username,profile_img,tweets)</a></strong></h2>
     <p>
         Creates a userThread object containing details about user and the thread together.
@@ -434,5 +437,35 @@
         tweetText - text of a tweet to be included with response text
         <br>
         thread_len - length of the thread
+    </dd>
+</dl>
+<strong><h2 id="running-bot">Surfing with the bot</h2></strong>
+<dl>
+    <dt><h4>Set up credentials</h4></dt>
+    <dd>
+        <dl>
+            <dt>You'll need Twitter API keys,if you don't have then create a <a href="https://developer.twitter.com/en">twitter developer account</a></dt>
+            <dd>Set up auth values for tweepy
+                <br>
+                <i>API_KEY</i>(API key)
+                <br>
+                <i>API_SKEY</i>(API Secret key)
+                <br>
+                <i>ACC_Token</i>(Access Token)
+                <br>
+                <i>ACC_Token_Secret</i>(Access Token Secret key)
+                <br>
+            </dd>
+            <dt>Setup firestore credentials by generating private key</dt>
+            <dd>Check more about this<a href="https://firebase.google.com/docs/admin/setup">here!</a></dd>
+            <dt>Update since_id.txt</dt>
+            <dd>
+                add the last tweet id which had mentioned the bot.
+            </dd>
+            <dt>Running</dt>
+            <dd>
+                Now simply run the bot by executing main.py,it'll be surfing.
+            </dd>
+        </dl>
     </dd>
 </dl>
