@@ -343,12 +343,15 @@ class ThreaderBot:
                 if hasattr(tweet, 'in_reply_to_status_id_str') and tweet.in_reply_to_status_id:
                     tweetTxt = tweet.text.lower()
                     if "compile" in tweetTxt.split(" ") or "ezcompile" in tweetTxt.split(" "):
+                        dm_request = False
                         easy_compile = True
                         if "compile" in tweetTxt.split(" "):
                             easy_compile = False
                         elif "compile" and "ezcompile" in tweetTxt.split(" "):
                             easy_compile = True
-                        request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.id,easy_compile))
+                        if "dm" in tweetTxt.split(" "):
+                            dm_request = True
+                        request_details.append((tweet.in_reply_to_status_id,tweet.in_reply_to_user_id,tweet.user.screen_name,tweet.user.id,tweet.id,easy_compile,dm_request))
                     else:
                         print("ThreaderBot: Nevermind")
                 else:
@@ -360,24 +363,39 @@ class ThreaderBot:
         username is required to reply
         Note: make sure that twitter api project is created under read and write
         '''
-        respone = "@"+request_username+" "+str(text)
+        response = "@"+request_username+" "+str(text)
         try:
-            api.update_status(respone,in_reply_to_status_id=rquest_id,possibly_sensitive=False)
+            api.update_status(response,in_reply_to_status_id=rquest_id,possibly_sensitive=False)
             print("Response sent successfully")
         except tweepy.TweepError as e:
             print("ThreaderBot:Error replying to the tweet, {}".format(e))
+    def sendResponseDirectMessage(self,text,id):
+        '''
+        Send response who requested the thread
+        Note: make sure that twitter api project is created under read, write and dm
+        '''
+        response = str(text)
+        
+        try:
+            api.send_direct_message(recipient_id=id,text=response)
+            print("Response sent as DM successfully")
+        except tweepy.TweepError as e:
+            print("ThreaderBot:Error in sending dm response, {}".format(e))
 def surfBot(bot:"ThreadBot"):
     '''
     Runs the bot and make him awake
     '''
     requests = bot.run()
     if requests:
-        for in_reply_to_tweet_id,in_reply_to_user_id,request_username,request_id,easy_compile in requests:
+        for in_reply_to_tweet_id,in_reply_to_user_id,request_username,request_user_id,request_id,easy_compile,dm_request in requests:
             try:
                 compiler = ThreadCompiler(in_reply_to_tweet_id,in_reply_to_user_id,request_id,easy_compile)
                 if compiler.save():
                     text = "Here is your compiled thread of length - "+str(len(compiler.tweets)) +"\nhttps://sobydamn.github.io/TwitterThread/threads/thread.html?threadID="+str(compiler.id)
-                    bot.sendResponse(text,request_username,request_id)
+                    if dm_request:
+                        bot.sendResponseDirectMessage(text,request_user_id)
+                    else:
+                        bot.sendResponse(text,request_username,request_id)
                 else:
                     #print("Bot Surfer:Nothing Requested!")
                     return
