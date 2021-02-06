@@ -24,8 +24,10 @@
         </li>
         <li><a href="#surfing-method">surfBot(args)</a></li>
         <li><a href="#responseGen-method">responseGen(args)</a></li>
-        <li><a href="#running-bot">Surfing with the bot</a></li>
     </ul>
+        <li><a href="#running-bot">Surfing with the bot</a></li>
+        <li><a href="#commands-bot">Bot Commands</a></li>
+        <li><a href="#bot-utitlity-site">Bot Utility Site</a></li>
         <li><a href="https://sobydamn.github.io/TwitterThread/#how-to-box">How to use?</a></li>
     </ul>
 <hr>
@@ -415,16 +417,18 @@
             </dl>
         </dd>
     </dl>
-<dl>
-    <dt><h2><strong><a name="surfing-method">surfBot(bot:"ThreadBot")</a></strong></h2></dt>
-    <dd>
-        compiles the tweet and save it to the database then send respond with id of parent tweet
-    </dd>
-    <dt><h3>Arguments:</h3></dt>
-    <dd>
-        bot - <a href="#method-ThreaderBot">ThreaderBot</a> object.
-    </dd>
-</dl>
+<hr>
+<h2><strong><a name="surfing-method">surfBot(bot:"ThreadBot")</a></strong></h2>
+    <dl>
+        <dt></dt>
+        <dd>
+            compiles the tweet and save it to the database then send respond with id of parent tweet
+        </dd>
+        <dt><h3>Arguments:</h3></dt>
+        <dd>
+            bot - <a href="#method-ThreaderBot">ThreaderBot</a> object.
+        </dd>
+    </dl>
 <dl>
     <dt><h2><strong><a name="responseGen-method">responseGen(link,tweetText,thread_len)</a></strong></h2></dt>
     <dd>
@@ -439,7 +443,8 @@
         thread_len - length of the thread
     </dd>
 </dl>
-<strong><h2 id="running-bot">Surfing with the bot</h2></strong>
+<hr>
+<h2><strong><a name="running-bot">Surfing with the bot</a></strong></h2>
 <dl>
     <dt><h4>Set up credentials</h4></dt>
     <dd>
@@ -457,7 +462,7 @@
                 <br>
             </dd>
             <dt>Setup firestore credentials by generating private key</dt>
-            <dd>Check more about this<a href="https://firebase.google.com/docs/admin/setup">here!</a></dd>
+            <dd>Check more about this <a href="https://firebase.google.com/docs/admin/setup">here!</a></dd>
             <dt>Update since_id.txt</dt>
             <dd>
                 add the last tweet id which had mentioned the bot.
@@ -467,5 +472,39 @@
                 Now simply run the bot by executing main.py,it'll be surfing.
             </dd>
         </dl>
+    </dd>
+</dl>
+<h2><strong><a name="commands-bot">Bot Commands</a></strong></h2>
+<dl>
+    <dt>Bot Testing Method</dt>
+    <dd>
+        <dt><i><p><em>&lt;username&gt;</em> </i><b>ping</b></dt>
+            <p>
+                bot will respond with <i>pong</i>
+            </p>
+    </dd>
+    <dt>Thread compiling commands</dt>
+    <dd>
+        <dl>
+            <dt><i><p><em>&lt;username&gt;</em> </i><b>compile</b></dt>
+                <dd>mentioning bot with this command at any part of the thread,bot will compile every part of the thread and send a <i>reply</i> response containing a link to the compiled thread.</dd>
+            <dt><i><p><em>&lt;username&gt;</em> </i><b>ezcompile</b></dt>
+                <dd>
+                    bot will compile every tweet above the tweet(inclduing) under which it's mentioned and send a <i>reply</i> response containing a link to the compiled thread.
+                </dd>
+            <dt><i><p><em>&lt;username&gt;</em> </i><b>compile dm</b></dt>
+                <dd>mentioning bot with this command at any part of the thread,bot will compile every part of the thread and send a <i>direct message</i> response containing a link to the compiled thread.</dd>
+            <dt><i><p><em>&lt;username&gt;</em> </i><b>ezcompile dm</b></dt>
+                <dd>
+                    bot will compile every tweet above the tweet(inclduing) under which it's mentioned and send a <i>direct message</i> response containing a link to the compiled thread.
+                </dd>
+        </dl>
+    </dd>
+</dl>
+<h2><strong><a name="bot-utitlity-site">Bot Utility Site</a></strong></h2>
+<dl>
+    <dt>The saved thread's data in database will be shown in a webpage by the <a href="https://github.com/SobyDamn/TwitterThread">utility site</a></dt>
+    <dd>
+        The site will generate the elements according to the thread data under the database,data will be saved under threads directly with unique threadID which is the tweet id of the parent tweet of the thread.
     </dd>
 </dl>
