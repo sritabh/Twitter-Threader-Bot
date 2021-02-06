@@ -271,7 +271,7 @@ class FirebaseUtility:
             doc = doc_ref.get()
             #mode is read just return the data from firestore
             if doc.exists:
-                print("FirebaseUtility: Reading since_id from firestore!")
+                #print("FirebaseUtility: Reading since_id from firestore!")
                 return doc.to_dict()['since_id']
             else:
                 raise Exception("FirebaseUtility:No bot data found in the location botData/lastMentions with name since_id")
@@ -279,7 +279,7 @@ class FirebaseUtility:
             #mode is write just add data to the firestore
             if data:
                 val = {'since_id':str(data)}
-                print("FirebaseUtility: Saving since_id - {} to firestore!".format(str(data)))
+                #print("FirebaseUtility: Saving since_id - {} to firestore!".format(str(data)))
                 doc_ref.set(val)
                 return True
             else:
