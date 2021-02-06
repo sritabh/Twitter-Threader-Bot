@@ -253,6 +253,7 @@ class FirebaseUtility:
         self.cred = cred
         self.initialize() ##initialise first
         self.db = firestore.client()
+            
     def initialize(self):
         try:
             if not firebase_admin._apps:
@@ -260,6 +261,29 @@ class FirebaseUtility:
                 firebase_admin.initialize_app(self.cred)
         except:
             print("FirebaseUtility:Error in cred FIX NEEDED!")
+    def botWorkerUtils(self,read=True,data=None):
+        '''
+        Method exclusive for hosting bot on platform like heroku like platform which resets the files in the directory whenever restarts
+        if read, it'll return the stored data else will be storing the given data
+        '''
+        doc_ref = self.db.collection(u'botData').document('lastMentions')
+        if read:
+            doc = doc_ref.get()
+            #mode is read just return the data from firestore
+            if doc.exists:
+                print("FirebaseUtility: Reading since_id from firestore!")
+                return doc.to_dict()['since_id']
+            else:
+                raise Exception("FirebaseUtility:No bot data found in the location botData/lastMentions with name since_id")
+        else:
+            #mode is write just add data to the firestore
+            if data:
+                val = {'since_id':str(data)}
+                print("FirebaseUtility: Saving since_id - {} to firestore!".format(str(data)))
+                doc_ref.set(val)
+                return True
+            else:
+                raise Exception("FirebaseUtility:No data to set")
     def documentExists(self,thread_id:"Thread parent id",thread_len:"Length of fetched thread"):
         doc_ref = self.db.collection(u'threads').document(str(thread_id))
         doc = doc = doc_ref.get()
@@ -285,33 +309,38 @@ class FirebaseUtility:
             pass
 class ThreaderBot:
     def __init__(self,file_name="since_id.txt"):
-        fread = open(file_name, 'r')
-        self.since_id = int(fread.read().strip())
-        fread.close()
+        self.since_id = self.read_write_since_id()
     def retrieve_since_id(self,file_name="since_id.txt"):
         fread = open(file_name, 'r')
         since_id = int(fread.read().strip())
         fread.close()
         return since_id
-
     def store_since_id(self,since_id, file_name="since_id.txt"):
         fwrite = open(file_name, 'w')
         fwrite.write(str(since_id))
         fwrite.close()
         return
+
+    def read_write_since_id(self,read=True,data=None):
+        '''
+        Working from database
+        '''
+        FU = FirebaseUtility(cred)
+        return FU.botWorkerUtils(read,data)
     def fetchTweets(self):
         '''
         Fetches only mentioned tweets
         retweet will trigger this aswell
         '''
         try:
-            self.since_id = self.retrieve_since_id()
+            self.since_id = self.read_write_since_id()
             mentions = api.mentions_timeline(self.since_id)
             mention = mentions[0] if len(mentions) !=0 else None
             if mention:
                 print("Storing The last mentioned",mention.id)
                 since_id = mention.id #Store the last id so that we can keep ourself updated
-                self.store_since_id(since_id)
+                self.read_write_since_id(False,since_id)
+                #self.store_since_id(since_id)
                 self.since_id = since_id #Update the bot aswell
             return mentions
         except tweepy.RateLimitError as e:

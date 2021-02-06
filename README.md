@@ -244,6 +244,18 @@
                             initialize the firebase app through the given credentials
                         </p>
                     </dd>
+                    <dt><h4>botWorkerUtils(read=True,data=None)</h4></dt>
+                    <dd>
+                        utility for the bot to work with,fetches since_id from the database which <b>ThreaderBot</b> class uses to find the mentions in timeline.
+                        <dl>
+                            <dt>args:</dt>
+                            <dd>
+                                read = if true it will read the data from the firestore location <i>botData/lastMentions/since_id</i>
+                                <br>
+                                data = if method is writing means read = False, this will be stored in the firestore at location <i>botData/lastMentions/since_id</i>
+                            </dd>
+                        </dl>
+                    </dd>
                     <dt>
                         <h4>
                             documentExists(thread_id:"Thread parent id",thread_len:"Length of fetched thread")
@@ -348,6 +360,18 @@
                             file_name - name of the file where <i>since_id</i> is stored<br>
                             since_id - the id of the last request tweet
                         </dd>
+                    </dl>
+                </dd>
+                <dt><h4>read_write_since_id(read=True,data=None)</h4></dt>
+                <dd>
+                    reads and write the since id from firestore, useful when working with platform like heroku which doesn't actually modifies the file.
+                    <dl>
+                    <dt>args:</dt>
+                    <dd>
+                        read = if true it will read the data from the firestore location <i>botData/lastMentions/since_id</i>
+                        <br>
+                        data = if method is writing means read = False, this will be stored in the firestore at location <i>botData/lastMentions/since_id</i>
+                    </dd>
                     </dl>
                 </dd>
                 <dt><h4>fetchTweets()</h4></dt>
