@@ -25,7 +25,7 @@
         <li><a href="#surfing-method">surfBot(args)</a></li>
         <li><a href="#responseGen-method">responseGen(args)</a></li>
     </ul>
-        <li><a href="#running-bot">Surfing with the bot</a></li>
+        <li><a href="#running-bot">Surfing with the bot(Running)</a></li>
         <li><a href="#commands-bot">Bot Commands</a></li>
         <li><a href="#bot-utitlity-site">Bot Utility Site</a></li>
         <li><a href="https://sobydamn.github.io/TwitterThread/#how-to-box">How to use?</a></li>
@@ -487,7 +487,13 @@
             </dd>
             <dt>Setup firestore credentials by generating private key</dt>
             <dd>Check more about this <a href="https://firebase.google.com/docs/admin/setup">here!</a></dd>
-            <dt>Update since_id.txt</dt>
+            <dt>Update since_id.txt(if running locally)</dt>
+            <dd>
+                add the last tweet id which had mentioned the bot.
+                <br>
+                If you're planning to run it locally, change the ThreaderBot <i>fetchTweet()</i> method to read it from offline file using the methods available in the class.
+            </dd>
+            <dt>add field in your firestore botData/lastMentions/since_id(if planning to run on system like heroku)</dt>
             <dd>
                 add the last tweet id which had mentioned the bot.
             </dd>
