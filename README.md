@@ -3,7 +3,7 @@
     <ul>
         <li><a href="#about">About</a></li>
         <li>
-        <a href="#class-methods">Class Methods</a>
+        <a href="#class-methods">Class</a>
             <ul>
                 <li>
                     <a href="#method-userThread">userThread</a>
